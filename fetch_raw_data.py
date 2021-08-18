@@ -54,8 +54,8 @@ records_as_dicts = [x for day_of_records in records_as_dicts for x in day_of_rec
 processed_df = pd.DataFrame(records_as_dicts)
 
 # what are the diffs between those seemingly similar columns?
-value_diffs = (processed_df[processed_df['UnknownDecimalValue2MatchesUnknownDollarValue'] !=
-                      processed_df['UnknownDollarValue']])
+value_diffs = (processed_df[processed_df['Capitalization'] !=
+                      processed_df['Capitalization2']])
 
 # not sure what this column is -- mostly '-' but some have a date
 mystery_date = processed_df[processed_df['MysteryDate'] != '-']
