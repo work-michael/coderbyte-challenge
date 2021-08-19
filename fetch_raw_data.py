@@ -1,4 +1,5 @@
 import pandas as pd
+import yfinance as yf
 
 data_path = 'IMFSChallenge/constituents_history.pkl'
 raw_data_df = pd.read_pickle(data_path)
@@ -53,14 +54,42 @@ records_as_dicts = [x for day_of_records in records_as_dicts for x in day_of_rec
 
 processed_df = pd.DataFrame(records_as_dicts)
 
-# what are the diffs between those seemingly similar columns?
-value_diffs = (processed_df[processed_df['Capitalization'] !=
-                      processed_df['Capitalization2']])
+# Since this file contains 1000 names per date (possibly R1000?),
+# loosely derive the Dow constituents by taking the top 30 names per date
+# Also select names on or after Jan 1st 2018 per instructions
 
-# not sure what this column is -- mostly '-' but some have a date
-mystery_date = processed_df[processed_df['MysteryDate'] != '-']
+top_n_cutoff = 30
+fake_dow_df = processed_df[processed_df['Date'] >= '2018-01-01']
+fake_dow_df = fake_dow_df.groupby('Date').apply(lambda x: x.nlargest(top_n_cutoff, 'Weight'))
 
-# are both the currency columns the same? Yes.
-currency_diffs = processed_df[processed_df['Currency1'] != processed_df['Currency2']]
-fx_rate_not_1 = processed_df[processed_df['FX Rate'].astype(float) != 1]
+
+#use yfinance to get data for each unique ticker in our fake Dow df
+
+tickers = fake_dow_df['Ticker'].unique()
+tickers_str = ' '.join(tickers)
+dow_start_date = fake_dow_df['Date'].min().strftime('%Y-%m-%d')
+
+## uncomment to fetch fresh data
+#yf_raw_df = yf.download(tickers_str, start=fake_dow_df['Date'].min(), end=fake_dow_df['Date'].max())
+#yf_raw_df.to_pickle('IMFSChallenge/yfinance_raw_df.pkl')
+
+
+yf_raw_df = pd.read_pickle('IMFSChallenge/yfinance_raw_df.pkl')
+
+
+
+
+
+
+## what are the diffs between those seemingly similar columns?
+#value_diffs = (processed_df[processed_df['Capitalization'] !=
+#                      processed_df['Capitalization2']])
+
+
+## not sure what this column is -- mostly '-' but some have a date
+#mystery_date = processed_df[processed_df['MysteryDate'] != '-']
+
+## are both the currency columns the same? Yes.
+#currency_diffs = processed_df[processed_df['Currency1'] != processed_df['Currency2']]
+#fx_rate_not_1 = processed_df[processed_df['FX Rate'].astype(float) != 1]
 
